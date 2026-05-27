@@ -16,9 +16,7 @@
 
 ### Prompt used
 
-```
-Where in this codebase is todo editing currently implemented? Cite the exact files and line numbers. Do not propose changes.
-```
+> Where in this codebase is todo editing currently implemented? Cite the exact files and line numbers. Do not propose changes.
 
 ### File paths and line numbers Cursor returned
 
@@ -41,9 +39,7 @@ Where in this codebase is todo editing currently implemented? Cite the exact fil
 
 ### Prompt used
 
-```
-I want to change todo editing so that only the user who created a todo can edit it. Propose a plan as a numbered list of changes, including files to edit, new tests to add, and any migration. Do not write code.
-```
+> I want to change todo editing so that only the user who created a todo can edit it. Propose a plan as a numbered list of changes, including files to edit, new tests to add, and any migration. Do not write code.
 
 ### Plan returned (I edited it by removing step 11):
 
@@ -206,3 +202,15 @@ flowchart LR
 - **Existing integration tests** will fail until every `create`/`edit`/`update` test signs in and fixtures declare owners.
 - **bcrypt in test fixtures:** use Rails’ encrypted attribute pattern or sign in via POST in setup rather than storing plaintext passwords in YAML.
 - **Mass assignment:** never add `user_id` to `todo_params`; always set owner in `create` from `current_user`.
+
+---
+
+## Part 3 - Agent mode
+
+### Prompt used
+
+> I already did step 1 of the plan. Only do step 2
+
+### Commit
+
+[e764bbc — Add users table and user_id on todos (plan step 2)](https://github.com/NU-CS-Software-Studio-Spring-26/homework-5-FuturrCoder/commit/e764bbc)
