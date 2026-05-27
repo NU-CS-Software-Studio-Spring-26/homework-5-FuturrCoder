@@ -43,9 +43,9 @@
 
 ### Plan returned (I edited it by removing step 11):
 
-# Creator-only todo editing
+\# Creator-only todo editing
 
-## Context
+\## Context
 
 Today, todos have no owner ([`db/schema.rb`](db/schema.rb) — only `description`, `due_date`, timestamps) and there is no authentication ([`AGENTS.md`](AGENTS.md), [`app/controllers/application_controller.rb`](app/controllers/application_controller.rb)). Edit/update are open in [`app/controllers/todos_controller.rb`](app/controllers/todos_controller.rb) (`edit` L18–20, `update` L37–48) with a public link on [`app/views/todos/show.html.erb`](app/views/todos/show.html.erb) L6.
 
@@ -73,14 +73,14 @@ flowchart LR
 
 ---
 
-## Numbered changes
+\## Numbered changes
 
-### 1. Enable bcrypt
+\### 1. Enable bcrypt
 
 - Edit [`Gemfile`](Gemfile): uncomment `gem "bcrypt", "~> 3.1.7"`.
 - Run `bundle install` (updates `Gemfile.lock`).
 
-### 2. Migrations
+\### 2. Migrations
 
 **2a. Create users** — `bin/rails generate migration CreateUsers email:string:uniq password_digest:string`
 
@@ -94,7 +94,7 @@ flowchart LR
 - For **existing rows** in dev/test: in the same migration (or a follow-up data migration), assign a default user (e.g. create `User` with sample email/password in migration `up` only, or backfill from seeds after migrate). Test DB is rebuilt from fixtures, so fixtures matter more than prod backfill.
 - Run `bin/rails db:migrate` (regenerates [`db/schema.rb`](db/schema.rb)).
 
-### 3. Models
+\### 3. Models
 
 - **New** [`app/models/user.rb`](app/models/user.rb):
   - `has_secure_password`
@@ -104,7 +104,7 @@ flowchart LR
   - `belongs_to :user`
   - Optional: `validate :user, presence: true` (redundant if DB `null: false`).
 
-### 4. Session / current user (controller layer)
+\### 4. Session / current user (controller layer)
 
 - Edit [`app/controllers/application_controller.rb`](app/controllers/application_controller.rb):
   - `helper_method :current_user, :logged_in?`
@@ -117,7 +117,7 @@ flowchart LR
   - `new`, `create` for sign-up (sets session on success).
   - Or combine sign-up into sessions — either is fine; sign-up is needed so tests/users exist.
 
-### 5. Todo controller authorization
+\### 5. Todo controller authorization
 
 - Edit [`app/controllers/todos_controller.rb`](app/controllers/todos_controller.rb):
   - `before_action :require_login, only: %i[new create]` (and optionally `edit update` if you want login required before owner check).
@@ -126,14 +126,14 @@ flowchart LR
   - `create`: build with `current_user.todos.build(todo_params)` (do **not** permit `user_id` in [`todo_params`](app/controllers/todos_controller.rb) L74–76).
   - Keep `respond_to` HTML + JSON only; no turbo_stream.
 
-### 6. Routes
+\### 6. Routes
 
 - Edit [`config/routes.rb`](config/routes.rb):
   - `resource :session, only: %i[new create destroy]` (or `sessions` plural — pick one and stay consistent).
   - `resources :users, only: %i[new create]` for registration.
   - Keep `resources :todos` as-is.
 
-### 7. Views
+\### 7. Views
 
 - **New** `app/views/sessions/new.html.erb` — login form (email, password).
 - **New** `app/views/users/new.html.erb` — sign-up form.
@@ -142,17 +142,17 @@ flowchart LR
 - Edit [`app/views/todos/new.html.erb`](app/views/todos/new.html.erb) / create flow — no change to form fields; creation implicitly sets owner in controller.
 - Optional: **New** `app/views/todos/forbidden.html.erb` if you prefer HTML body over bare 403 for direct URL access.
 
-### 8. Fixtures and seeds
+\### 8. Fixtures and seeds
 
 - **New** [`test/fixtures/users.yml`](test/fixtures/users.yml) — at least `alice` and `bob` with known passwords (fixture ERB / `BCrypt` or use `password_digest` from a known hash).
 - Edit [`test/fixtures/todos.yml`](test/fixtures/todos.yml) — add `user: alice` (or `user_id`) on `one`/`two`; assign different owners to test denial.
 - Edit [`db/seeds.rb`](db/seeds.rb) — create sample users and associate seeded todos with a user (sample emails/passwords only).
 
-### 9. Test helper for integration/system tests
+\### 9. Test helper for integration/system tests
 
 - Edit [`test/test_helper.rb`](test/test_helper.rb) — add `sign_in_as(user)` that posts to session create (or sets session directly in integration tests via `post session_url, params: ...`).
 
-### 10. New and updated tests
+\### 10. New and updated tests
 
 **New** [`test/models/user_test.rb`](test/models/user_test.rb) (light):
 
@@ -181,13 +181,13 @@ flowchart LR
 
 **Run:** `bin/rails db:test:prepare test test:system` and `bin/rubocop` per project conventions.
 
-### 11. Documentation (optional, out of scope unless required for hw)
+\### 11. Documentation (optional, out of scope unless required for hw)
 
 - Brief note in [`AGENTS.md`](AGENTS.md) that authorization is owner-only on edit/update (if you maintain that file for agents).
 
 ---
 
-## Out of scope (unless you expand later)
+\## Out of scope (unless you expand later)
 
 - Devise or other auth gems (requires explicit approval).
 - Owner-only **destroy**.
@@ -197,7 +197,7 @@ flowchart LR
 
 ---
 
-## Risk / decision notes
+\## Risk / decision notes
 
 - **Existing integration tests** will fail until every `create`/`edit`/`update` test signs in and fixtures declare owners.
 - **bcrypt in test fixtures:** use Rails’ encrypted attribute pattern or sign in via POST in setup rather than storing plaintext passwords in YAML.
