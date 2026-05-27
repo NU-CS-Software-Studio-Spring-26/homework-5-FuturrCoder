@@ -214,3 +214,17 @@ Run: `bin/rails db:test:prepare test test:system` and `bin/rubocop` per project 
 ### Commit
 
 [e764bbc — Add users table and user_id on todos (plan step 2)](https://github.com/NU-CS-Software-Studio-Spring-26/homework-5-FuturrCoder/commit/e764bbc)
+
+## Part 3 - Bad -> good prompt rewrite
+
+### Bad prompt:
+
+> fix the bug in todos
+
+### Good prompt:
+
+> When creating a todo, I get ActiveRecord::NotNullViolation in TodosController#create. Step 2 of my plan already added user_id on todos in schema.rb, but app/models/todo.rb still has no belongs_to :user and create uses Todo.new(todo_params) without setting an owner.
+> 
+> Fix todo creation so new todos get a user_id: add the User/Todo associations, minimal session login (current_user, sign-in route/view), require login for new/create, and build todos with current_user.todos.build(todo_params) - don’t permit user_id in strong params. After a successful create I should be redirected to the todo show page, not a 500.
+> 
+> Stick to existing Rails patterns in this repo (params.expect, HTML + JSON only, no new gems, no turbo_stream). Update test/controllers/todos_controller_test.rb and fixtures as needed. Done when I can sign in, create a todo in the browser, and bin/rails db:test:prepare test passes.
