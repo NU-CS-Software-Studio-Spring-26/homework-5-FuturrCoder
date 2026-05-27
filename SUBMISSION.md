@@ -349,7 +349,6 @@ Verify: SUBMISSION acceptance (Firefox Network and/or `curl` with turbo-stream A
 
 Gate: `bin/rails db:test:prepare test` and `bin/rubocop`
 
-### Rejected from the AI plan
+## PR
 
-- `format.html` redirect and `format.json` on `toggle_high_priority`. The toggle only needs `format.turbo_stream`.
-- Replacing a separate `priority_toggle` partial instead of the whole `dom_id(todo)` row. One `turbo_stream.replace` on the existing partial is enough.
+https://github.com/NU-CS-Software-Studio-Spring-26/homework-5-FuturrCoder/pull/1
