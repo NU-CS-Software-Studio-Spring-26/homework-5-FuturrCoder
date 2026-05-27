@@ -1,0 +1,17 @@
+.env
+.env.*
+config/master.key
+config/credentials/*.key
+
+tmp/
+log/
+storage/
+*.sqlite3
+
+node_modules/
+.bundle/
+vendor/bundle/
+
+public/assets/
+app/assets/builds/
+coverage/
