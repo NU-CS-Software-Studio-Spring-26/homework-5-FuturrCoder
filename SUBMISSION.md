@@ -228,3 +228,128 @@ Run: `bin/rails db:test:prepare test test:system` and `bin/rubocop` per project 
 > Fix todo creation so new todos get a user_id: add the User/Todo associations, minimal session login (current_user, sign-in route/view), require login for new/create, and build todos with current_user.todos.build(todo_params) - don’t permit user_id in strong params. After a successful create I should be redirected to the todo show page, not a 500.
 > 
 > Stick to existing Rails patterns in this repo (params.expect, HTML + JSON only, no new gems, no turbo_stream). Update test/controllers/todos_controller_test.rb and fixtures as needed. Done when I can sign in, create a todo in the browser, and bin/rails db:test:prepare test passes.
+
+## Part 4
+
+### Discover Turbo Streams
+
+My explanation: Turbo Streams are a way to change specific parts of the DOM (append, prepend, replace, update, remove, before, after) without sending the full HTML page.
+
+Concrete thing I verified: "Turbo Stream response — not a page; one or more <turbo-stream> elements, each targeting a DOM id". Verified with the [Turbo Streams handbook](https://turbo.hotwired.dev/handbook/streams#stream-messages-and-actions).
+
+### Acceptance Criteria
+
+Story: As a user of the Todo app, I want to be able to mark certain todos as high priority so that I know which todos to focus on.
+
+Acceptance criteria:
+
+- `Todo` gets a `high_priority` boolean attribute.
+- When viewing the todo list or a specific todo, it is easy to tell which todos are high priority with some kind of icon and/or color. It is also easy to toggle whether a todo is high priority using an icon or button.
+- Clicking the toggle sends a request that flips the priority and returns a Turbo Stream that updates only that row (or only the toggle button). The rest of the page must not re-render.
+- Verified in Firefox DevTools Network tab: the response `Content-Type` is `text/vnd.turbo-stream.html` , and the request `Accept` header includes the same MIME type.
+- Also verified by AI using Playwright and/or `curl`.
+- At least one automated test covers the toggle.
+
+### Plan
+
+\# High-priority toggle via Turbo Streams
+
+\## Context
+
+Part 4 (SUBMISSION.md L242–251): `high_priority` column; indicator + toggle on list/show; Turbo Stream updates `dom_id(todo)` only; `text/vnd.turbo-stream.html` Accept/Content-Type; one automated toggle test.
+
+`app/views/todos/_todo.html.erb` already uses `dom_id(todo)`. Index and show render that partial—update it once for both pages. Use `format.turbo_stream` on `toggle_high_priority` only; keep other CRUD actions HTML + JSON.
+
+Slice (a) fixture note: `todos.user_id` is NOT NULL. If `db:test:prepare` fails, add `test/fixtures/users.yml` and `user:` references on todos when editing fixtures.
+
+---
+
+\## Slice (a): Migration + model attribute
+
+1. `bin/rails generate migration AddHighPriorityToTodos high_priority:boolean`
+2. Migration: `add_column :todos, :high_priority, :boolean, default: false, null: false` (reversible `change`)
+3. `bin/rails db:migrate`
+4. `test/fixtures/todos.yml`: add `high_priority: false` on each todo (+ fix `user:` refs if needed)
+
+Done when: column exists; fixtures load; pages still render (UI in slice c).
+
+---
+
+\## Slice (b): Route + controller action
+
+Route (`config/routes.rb`):
+
+```ruby
+resources :todos do
+  member do
+    patch :toggle_high_priority
+  end
+end
+```
+
+Action (`app/controllers/todos_controller.rb`):
+
+- Add `toggle_high_priority` to `before_action :set_todo`.
+- Flip server-side; do not add `high_priority` to `todo_params`.
+
+```ruby
+def toggle_high_priority
+  @todo.update!(high_priority: !@todo.high_priority)
+
+  respond_to do |format|
+    format.turbo_stream
+  end
+end
+```
+
+Done when: `toggle_high_priority_todo_path` exists; action renders turbo_stream (template in slice c).
+
+---
+
+\## Slice (c): Turbo Stream view + UI + test
+
+Template `app/views/todos/toggle_high_priority.turbo_stream.erb`:
+
+```erb
+<%= turbo_stream.replace dom_id(@todo) do %>
+  <%= render @todo %>
+<% end %>
+```
+
+Partial `app/views/todos/_todo.html.erb`:
+
+- CSS class when `todo.high_priority?` (e.g. `.todo--high-priority` in `application.css`)
+- Visible indicator when high priority (label or ★)
+- Toggle:
+
+```erb
+<%= button_to (todo.high_priority? ? "★ High" : "☆ Mark high priority"),
+      toggle_high_priority_todo_path(todo),
+      method: :patch,
+      form: { data: { turbo_stream: true } } %>
+```
+
+Test `test/controllers/todos_controller_test.rb`:
+
+```ruby
+test "toggle high priority responds with turbo stream and flips attribute" do
+  assert_not @todo.high_priority?
+
+  patch toggle_high_priority_todo_url(@todo), as: :turbo_stream
+
+  assert_response :success
+  assert_equal "text/vnd.turbo-stream.html", response.media_type
+  assert_includes response.body, %(turbo-stream action="replace")
+  assert_includes response.body, %(target="#{dom_id(@todo)}")
+  assert @todo.reload.high_priority?
+end
+```
+
+Verify: SUBMISSION acceptance (Firefox Network and/or `curl` with turbo-stream Accept).
+
+Gate: `bin/rails db:test:prepare test` and `bin/rubocop`
+
+### Rejected from the AI plan
+
+- `format.html` redirect and `format.json` on `toggle_high_priority`. The toggle only needs `format.turbo_stream`.
+- Replacing a separate `priority_toggle` partial instead of the whole `dom_id(todo)` row. One `turbo_stream.replace` on the existing partial is enough.
