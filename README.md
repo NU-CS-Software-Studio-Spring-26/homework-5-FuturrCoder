@@ -12,8 +12,6 @@ Things you may want to cover:
 
 * Configuration
 
-  Sensitive and generated files are excluded from Cursor indexing via [.cursorignore](.cursorignore).
-
 * Database creation
 
 * Database initialization
