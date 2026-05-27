@@ -12,8 +12,8 @@ Any AI-generated change must follow these rules:
 - **Generators**: Prefer `bin/rails generate` (scaffold, migration, controller, Stimulus) over hand-written boilerplate; edit generated files only where needed.
 - **Migrations**: Write reversible `change` (or explicit `up`/`down`) migrations; avoid destructive changes without a rollback path.
 - **Strong parameters**: Permit attributes only through a private `*_params` method using `params.expect(todo: [...])` (and `params.expect(:id)` for lookups)—never mass-assign from `params` directly.
-- **Controllers**: Use `respond_to` with `format.html` and `format.json` only, matching `TodosController`. JSON responses use Jbuilder under `app/views/**/*.json.jbuilder`.
-- **Views & Hotwire**: ERB partials under `app/views/todos/_*.html.erb` and the shared layout. Use `turbo-rails` for navigation/frames where it fits; do not add `format.turbo_stream` or `*.turbo_stream.erb` unless the project explicitly adopts that pattern.
+- **Controllers**: Full-page CRUD uses `respond_to` with `format.html` and `format.json` (matching `TodosController`). JSON responses use Jbuilder under `app/views/**/*.json.jbuilder`. For partial in-place updates, add `format.turbo_stream` on the relevant action only.
+- **Views & Hotwire**: ERB partials under `app/views/todos/_*.html.erb` and the shared layout. Use `turbo-rails` for navigation and frames. Prefer **Turbo Streams** (`format.turbo_stream`, `*.turbo_stream.erb`) over custom JS or Stimulus when updating part of the page (e.g. toggle a row); target stable DOM ids. Avoid one-off Stimulus controllers when a stream action fits.
 - **JavaScript**: Use importmap + Stimulus in `app/javascript/controllers/`. No inline JavaScript in ERB.
 - **Tests**: Minitest in `test/` (unit, integration, system). Add or update tests when behavior changes.
 - **Dependencies & security**: Do not add gems without explicit approval. Keep CSRF protection (`csrf_meta_tags`); never `skip_before_action :verify_authenticity_token`. Do not commit secrets or seed real user data—sample data in `db/seeds.rb` only.

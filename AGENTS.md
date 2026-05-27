@@ -19,7 +19,8 @@
 
 - Naming: `Todo` / `TodosController`; routes use `resources :todos` (no `root` route defined).
 - Authorization: none in `app/` (no auth gems in the Gemfile).
-- Controllers: `respond_to` with `format.html` and `format.json` only (`TodosController`); no `format.turbo_stream` or `*.turbo_stream.erb` in the repo.
+- Controllers: full-page CRUD uses `format.html` and `format.json` (`TodosController`); add `format.turbo_stream` only for partial in-place updates.
+- Hotwire: prefer Turbo Streams (`*.turbo_stream.erb`, stable DOM ids) over custom JS/Stimulus for partial page updates; `turbo-rails` is in the stack for drive/frames.
 - Partials: `app/views/todos/_*.html.erb`; shared layout `app/views/layouts/application.html.erb`.
 - JavaScript: importmap + Stimulus under `app/javascript/controllers/` (`javascript_importmap_tags` in the layout).
 - Strong params: `params.expect(todo: [...])` in `TodosController`.
