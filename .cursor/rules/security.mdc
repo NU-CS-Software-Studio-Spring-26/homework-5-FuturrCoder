@@ -1,0 +1,15 @@
+---
+description: Security requirements for AI-generated changes
+alwaysApply: true
+---
+
+# Security (todo app)
+
+Any AI-generated change must follow these rules:
+
+- **Secrets**: Never write, log, or echo secrets, API keys, tokens, or production credentials. Do not commit `/.env*`, `/config/master.key`, or credentials files; use Rails credentials or environment variables only outside the repo.
+- **User input execution**: Never use `eval`, `instance_eval`, `class_eval`, or similar on request params, cookies, headers, or other untrusted input.
+- **XSS**: Never call `html_safe`, `raw`, or `<%==` on untrusted input (params, DB fields, external APIs). Let ERB escape by default; use `sanitize` only when HTML is required and input is explicitly allowed.
+- **SQL**: Use ActiveRecord/query APIs with bind parameters (`where(id: id)`, `find`, placeholders). Never build SQL with string interpolation from user input (`"SELECT ... #{params[:q]}"`).
+- **Rails protections**: Do not disable CSRF (`skip_before_action :verify_authenticity_token`), strong parameters / mass-assignment guards (`params.permit` / `params.expect`), or framework session security. If Devise is added later, do not bypass its session or authentication checks (`skip_before_action :authenticate_user!`, etc.).
+- **This app**: Layout includes `csrf_meta_tags`; controllers use `params.expect` for permitted attributes. No auth gem is in use today—do not weaken defaults when adding features.
