@@ -8,3 +8,15 @@
  *
  * Consider organizing styles into separate files for maintainability.
  */
+
+.todo--high-priority {
+  border-left: 4px solid #c00;
+  padding-left: 0.75rem;
+  background-color: #fff8f8;
+}
+
+.todo__priority-label {
+  color: #c00;
+  font-weight: bold;
+  margin: 0.25rem 0;
+}
